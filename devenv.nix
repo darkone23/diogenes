@@ -45,6 +45,10 @@
   tasks."diogenes:serve" = {
     exec = ''./server/diogenes-server.pl'';
   };
+  tasks."diogenes:setup" = {
+    # required before you can run serve
+    exec = ''bash -c "make && make -f mk.prebuilt-data"'';
+  };
 
   # https://devenv.sh/tests/
   enterTest = ''

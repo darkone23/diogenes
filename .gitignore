@@ -1,4 +1,4 @@
-/dependencies/data
+/dependencies/data*
 /.DS_Store
 /build
 /dependencies/PersXML.ent
@@ -18,3 +18,13 @@ Changes.html
 #!.elasticbeanstalk/*.cfg.yml
 #!.elasticbeanstalk/*.global.yml
 #!.elasticbeanstalk/config.yml
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+data/

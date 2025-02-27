@@ -13,6 +13,10 @@
 /server/favicon.ico
 Changes.html
 /client/node-font-list
+/mk.secrets
+/node_modules
+/package.json
+/package-lock.json
 
 # Elastic Beanstalk Files
 #.elasticbeanstalk/*

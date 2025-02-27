@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.7.0";
+$Diogenes::Base::Version =  "4.7.2";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -302,18 +302,23 @@ my %defaults = (
     seen_author_list => [],
     hits => 0,
 
-    # Only applicable for Electron app
-    external_pdf_viewer => 'false',
+    # At the moment, the internal PDF viewer in the Electron app is
+    # quite slow to open large files, so we default to using the
+    # browser.
+    external_pdf_viewer => 'true',
     xml_export_dir => '',
 
-    # URL of Latin/Greek dict server; current word is appended
-    # e.g. for SilverDict:
+    # URL of Latin/Greek dict server; current word is appended. Must
+    # be on localhost for Electron app.  E.g. for SilverDict:
     # external_dict = 'http://localhost:2628/?group=Diogenes&key='
     external_dict => '',
 
-    # URL of English dictionary server; current word is appended
-    # Default is Wiktionary, but could be English to another language
-    english_dict => 'https://en.wiktionary.org/wiki/'
+    # URL of English dictionary server; current word is appended. Could
+    # be used for a dict (e.g. SilverDict) from English to another
+    # language.  Default value of 'gcide' uses internal dictionary.
+    # CSP will block external sites, except Wiktionary.
+    # english_dict => 'https://en.wiktionary.org/wiki/',
+    english_dict => 'gcide'
     );
 
 sub validate

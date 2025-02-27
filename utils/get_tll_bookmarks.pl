@@ -44,7 +44,6 @@ while (my $file = readdir $dh) {
     next if $file =~ m/^\./;
     next unless $file =~ m/\.pdf$/i;
     next unless $file =~ m/ThLL/;
-    next if $file =~ m/ThLL_IX_1__3_/; # No bookmark info available yet 
     my ($vol, $cs, $ce) = get_vol_and_col($file);
     my $key = "$vol.$cs";
     # print STDERR "$vol, $cs, $ce, $key\n";
@@ -60,13 +59,19 @@ my %start_page = %{ start_pages() };
 open(my $json_fh, "<:encoding(UTF-8)", $json_file)
     or die("Can't open $json_file: $!\n");
 my $junk = <$json_fh>; # throw away first line
+my @lines = <$json_fh>;
 print STDERR "Processing index.json\n";
-while (<$json_fh>) {
-    m#\{"0":\{"_":"(.*?)\s+<a onclick=\\"rI\(event,'-/(.*?)\.(jpg|pdf)#;
+
+# We take the lines in reverse order so that, when there are multiple
+# numbered entries for the same lemma, the first one at the start of
+# all the entries takes precedence.
+for (my $i = $#lines; $i >= 0; $i--) {
+    my $line = $lines[$i];
+    $line =~ m#\{"0":\{"_":"(.*?)\s+<a onclick=\\"rI\(event,'-/(.*?)\.(jpg|pdf)#;
     my $word = $1;
     my $vol_col = $2;
-    next if m/\"DT_RowId\":83061\}/; # Bad entry
-    warn "BAD: $_" unless $word and $vol_col;
+    next if $line =~ m/\"DT_RowId\":83061\}/; # Bad entry
+    warn "BAD: $line" unless $word and $vol_col;
     $word =~ s#</?small>##g;
     $word =~ s#&[lg]t;##g;
     $word =~ s#^\d\.\s*##g;
@@ -80,6 +85,7 @@ while (<$json_fh>) {
     my $col = $2;
     $vol =~ s/,/./g;
     my ($key, $start_col);
+    # print STDERR "v: $vol; c: $col\n";
     foreach my $pdf (@pdfs) {
         if ($vol eq @{$pdf}[0] and $col >= @{$pdf}[1] and $col <= @{$pdf}[2]) {
             $key = @{$pdf}[3];
@@ -104,16 +110,16 @@ foreach my $k (sort keys %bookmarks) {
 
 sub get_vol_and_col {
     my $filename = shift;
-    if ($filename =~ m/ThLL_IX_1__3_/) {
-        return ["9.1.3", "503", "530"];
-    }
-    # Volume number in the json index is either one part or two.  We don't care about the third part of the volume number, since the json index does not use it and in any case it is not used consistently in filenames to denote the fascicle.  
+    # Volume number in the json index is either one part or two.  We don't care about the third part of the volume number, since the json index does not use it and in any case it is not used consistently in filenames to denote the fascicle.
+
+    # Filenames have been tidied up and made consistent, including replacing en-dashes with hyphens.
+    
     die $! unless $filename =~ m/ThLL vol\. ((?:onom|\d+)(?:\.\d+)?)/;
     my $vol = $1;
     $vol =~ s/onom\./o/;
-    $vol =~ s/^0//; # Leading zero used inconsistently
+    $vol =~ s/^0+//;
     die $! unless
-        $filename =~ m/ThLL vol\. (?:onom|\d+)(?:[\.\d]+)* col\. (\d+)–(\d+)/; # en dash!
+        $filename =~ m/ThLL vol\. (?:onom|\d+)(?:[\.\d]+)* col\. (\d+)-(\d+)/;
     my $col_start = $1;
     my $col_end = $2;
     $col_start =~ s/^0+//;
@@ -173,7 +179,8 @@ sub start_pages {
       '8.1333' => 3,
       '9.1.1' => 1,
       '9.1.209' => 1,
-      '9.1.337', => 1,
+      '9.1.337' => 1,
+      '9.1.513' => 1,
       '9.2.1' => 8,
       '9.2.625' => 3,
       '10.1.1' => 6,
@@ -189,6 +196,9 @@ sub start_pages {
       '11.2.321' => 1,
       '11.2.497' => 1,
       '11.2.657' => 1,
+      '11.2.785' => 1,
+      '11.2.961' => 1,
+      '11.2.1121' => 1,
       'o2.1' => 4,
       'o3.1' => 3
     }

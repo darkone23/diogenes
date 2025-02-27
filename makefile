@@ -5,8 +5,13 @@
 
 include mk.common
 
-GITHUBTOKEN=replace-this-token
-CLOUDFRONTID=replace-this-id
+# Private info set in mk.secrets
+GITHUBTOKEN=XXXX
+CLOUDFRONTID=XXXX
+MACAPPPASSWORD=XXXX
+MACTEAMID=XXXX
+# Leading hyphen means not to throw an error if file does not exist
+-include mk.secrets
 
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
@@ -14,7 +19,6 @@ DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm
 ## (for both architectures) before anything else:
 # xattr -r -d com.apple.quarantine electron/electron-v34.1.0-darwin-arm64/Electron.app
 ELECTRONVERSION = 34.1.0
-# ELECTRONVERSION = 20.0.0
 
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
@@ -66,12 +70,12 @@ electron/electron-v$(ELECTRONVERSION)-linux-x64:
 linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	rm -rf app/linux64
 	mkdir -p app/linux64
-	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* app/linux64
-	cp -r server app/linux64
-	cp -r dependencies app/linux64
+	cp -a electron/electron-v$(ELECTRONVERSION)-linux-x64/* app/linux64
+	cp -a server app/linux64
+	cp -a dependencies app/linux64
 	mkdir -p app/linux64/dist
 	cp dist/diogenes.desktop dist/icon.svg app/linux64/dist/
-	cp -r client app/linux64/resources/app
+	cp -a client app/linux64/resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/linux64/resources/app/version.js
 	mv app/linux64/electron app/linux64/diogenes
 	cp COPYING README.md app/linux64
@@ -139,17 +143,17 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 	@echo "installed, to edit the .exe resources."
 	rm -rf app/w32
 	mkdir -p app/w32
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* app/w32
-	cp -r client app/w32/resources/app
+	cp -a electron/electron-v$(ELECTRONVERSION)-win32-ia32/* app/w32
+	cp -a client app/w32/resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/w32/resources/app/version.js
 	mv app/w32/electron.exe app/w32/diogenes.exe
-	cp -r server app/w32
-	cp -r dependencies app/w32
-	cp -r build/w32perl/strawberry app/w32
+	cp -a server app/w32
+	cp -a dependencies app/w32
+	cp -a build/w32perl/strawberry app/w32
 	cp build/icons/diogenes.ico app/w32
 	cp COPYING app/w32/COPYING.txt
 	cp README.md app/w32/README.md
-	wine64 build/rcedit.exe app/w32/diogenes.exe \
+	wine build/rcedit.exe app/w32/diogenes.exe \
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
@@ -162,13 +166,13 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/ico
 	@echo "installed, to edit the .exe resources."
 	rm -rf app/w64
 	mkdir -p app/w64
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* app/w64
-	cp -r client app/w64/resources/app
+	cp -a electron/electron-v$(ELECTRONVERSION)-win32-x64/* app/w64
+	cp -a client app/w64/resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/w64/resources/app/version.js
 	mv app/w64/electron.exe app/w64/diogenes.exe
-	cp -r server app/w64
-	cp -r dependencies app/w64
-	cp -r build/w64perl/strawberry app/w64
+	cp -a server app/w64
+	cp -a dependencies app/w64
+	cp -a build/w64perl/strawberry app/w64
 	cp build/icons/diogenes.ico app/w64
 	cp COPYING app/w64/COPYING.txt
 	cp README.md app/w64/README.md
@@ -198,11 +202,11 @@ mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icn
 	rm -rf app/mac-x64
 	mkdir -p app/mac-x64
 	mkdir -p app/mac-x64/about
-	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac-x64
-	cp -r client app/mac-x64/Electron.app/Contents/Resources/app
+	cp -a electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac-x64
+	cp -a client app/mac-x64/Electron.app/Contents/Resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac-x64/Electron.app/Contents/Resources/app/version.js
-	cp -r server app/mac-x64/Electron.app/Contents
-	cp -r dependencies app/mac-x64/Electron.app/Contents
+	cp -a server app/mac-x64/Electron.app/Contents
+	cp -a dependencies app/mac-x64/Electron.app/Contents
 	cp build/diogenes.icns app/mac-x64/Electron.app/Contents/Resources/
 	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac-x64/Electron.app/Contents/Info.plist
 	perl -pi -e 's/Electron/Diogenes/g' app/mac-x64/Electron.app/Contents/Info.plist
@@ -211,11 +215,6 @@ mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icn
 	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-x64/Electron.app/Contents/Info.plist
 	mv app/mac-x64/Electron.app app/mac-x64/Diogenes.app
 	mv app/mac-x64/Diogenes.app/Contents/MacOS/Electron app/mac-x64/Diogenes.app/Contents/MacOS/Diogenes
-
-# There are now multiple helper apps, and each has an Info.plist that
-# may need modifying, so for now we just refrain from renaming it
-# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-x64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	cp COPYING app/mac-x64/about/COPYING.txt
 	cp README.md app/mac-x64/about/README.md
 	mv app/mac-x64/LICENSE app/mac-x64/about/
@@ -226,11 +225,11 @@ mac-arm64: all electron/electron-v$(ELECTRONVERSION)-darwin-arm64 build/diogenes
 	rm -rf app/mac-arm64
 	mkdir -p app/mac-arm64
 	mkdir -p app/mac-arm64/about
-	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-arm64/* app/mac-arm64
-	cp -r client app/mac-arm64/Electron.app/Contents/Resources/app
+	cp -a electron/electron-v$(ELECTRONVERSION)-darwin-arm64/* app/mac-arm64
+	cp -a client app/mac-arm64/Electron.app/Contents/Resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac-arm64/Electron.app/Contents/Resources/app/version.js
-	cp -r server app/mac-arm64/Electron.app/Contents
-	cp -r dependencies app/mac-arm64/Electron.app/Contents
+	cp -a server app/mac-arm64/Electron.app/Contents
+	cp -a dependencies app/mac-arm64/Electron.app/Contents
 	cp build/diogenes.icns app/mac-arm64/Electron.app/Contents/Resources/
 	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac-arm64/Electron.app/Contents/Info.plist
 	perl -pi -e 's/Electron/Diogenes/g' app/mac-arm64/Electron.app/Contents/Info.plist
@@ -239,8 +238,6 @@ mac-arm64: all electron/electron-v$(ELECTRONVERSION)-darwin-arm64 build/diogenes
 	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-arm64/Electron.app/Contents/Info.plist
 	mv app/mac-arm64/Electron.app app/mac-arm64/Diogenes.app
 	mv app/mac-arm64/Diogenes.app/Contents/MacOS/Electron app/mac-arm64/Diogenes.app/Contents/MacOS/Diogenes
-# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	cp COPYING app/mac-arm64/about/COPYING.txt
 	cp README.md app/mac-arm64/about/README.md
 	mv app/mac-arm64/LICENSE app/mac-arm64/about/
@@ -254,13 +251,27 @@ zip-linux64: app/linux64
 	cd app;tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
 
-apps: mac-x64 mac-arm64 linux64 #w32
+apps-all: mac-x64 mac-arm64 linux64 w32
 
-zip-mac: app/mac
-	rm -rf app/diogenes-mac-$(DIOGENESVERSION)
-	mv app/mac app/diogenes-mac-$(DIOGENESVERSION)
-	cd app;zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
-	rm -rf diogenes-mac-$(DIOGENESVERSION)
+# Need to use ditto after codesigning, not zip.  You cannot staple to
+# a zip, so we staple to the app and then rezip.  No idea if that is
+# necessary
+zip-mac-x64: mac-x64
+	rm -f app/diogenes-mac-x64-$(DIOGENESVERSION).zip
+	npx electron-osx-sign app/mac-x64/Diogenes.app
+	ditto -c -k --sequesterRsrc --keepParent app/mac-x64/Diogenes.app app/diogenes-mac-x64-$(DIOGENESVERSION).zip
+	xcrun notarytool submit app/diogenes-mac-x64-$(DIOGENESVERSION).zip --wait --apple-id "pheslin@gmail.com" --password "$(MACAPPPASSWORD)" --team-id "$(MACTEAMID)" --output-format json
+	xcrun stapler staple app/mac-x64/Diogenes.app
+	ditto -c -k --sequesterRsrc --keepParent app/mac-x64/Diogenes.app app/mac-x64/diogenes-mac-x64-$(DIOGENESVERSION).zip
+
+
+zip-mac-arm64: mac-arm64
+	rm -f app/diogenes-mac-arm64-$(DIOGENESVERSION).zip
+	npx electron-osx-sign app/mac-arm64/Diogenes.app
+	ditto -c -k --sequesterRsrc --keepParent app/mac-arm64/Diogenes.app app/diogenes-mac-arm64-$(DIOGENESVERSION).zip
+	xcrun notarytool submit app/diogenes-mac-arm64-$(DIOGENESVERSION).zip --wait --apple-id "pheslin@gmail.com" --password "$(MACAPPPASSWORD)" --team-id "$(MACTEAMID)" --output-format json
+	xcrun stapler staple app/mac-arm64/Diogenes.app
+	ditto -c -k --sequesterRsrc --keepParent app/mac-arm64/Diogenes.app app/mac-arm64/diogenes-mac-arm64-$(DIOGENESVERSION).zip
 
 zip-w32: app/w32
 	rm -rf app/diogenes-win32-$(DIOGENESVERSION)
@@ -274,23 +285,19 @@ zip-w64: app/w64
 	cd app;zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
 	rm -rf app/diogenes-win64-$(DIOGENESVERSION)
 
-zip-all: zip-linux64 zip-mac zip-w32 zip-w64
+zip-all: zip-linux64 zip-mac-x64 zip-mac-arm64 zip-w32 zip-w64
 
 build/inno-setup/app/ISCC.exe:
 	mkdir -p build/inno-setup
 	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
 	cd build/inno-setup; innoextract is.exe
 
-# OS X after Catalina will not run 32-bit apps, even under emulation.
-# This is not a problem with rcedit, as we can use 64-bit wine to run
-# a 64-bit rcedit.  But there is currently only a 32-bit version of
-# Inno Setup available, so we just make the installer on Linux.  
 installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
 #install/diogenes-setup-win32-$(DIOGENESVERSION).exe: app/w32
 	mkdir -p install
 	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
-	wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
+	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
@@ -305,18 +312,12 @@ install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.e
 # Experience shows that the pkg installer is fragile, so we have
 # reverted to distributing the app as a simple zip file, which is less
 # potentially confusing than a DMG installer.
-installer-mac: install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
-
-install/diogenes-mac-x64-$(DIOGENESVERSION).zip: app/mac-x64
+installer-mac-x64: zip-mac-x64
 	mkdir -p install
-	rm -f install/diogenes-mac-x64-$(DIOGENESVERSION).zip
-	cd app/mac-x64; zip -r diogenes-mac-x64-$(DIOGENESVERSION).zip Diogenes.app about
 	mv app/mac-x64/diogenes-mac-x64-$(DIOGENESVERSION).zip install/
 
-install/diogenes-mac-arm64-$(DIOGENESVERSION).zip: app/mac-arm64
+installer-mac-arm64: zip-mac-arm64
 	mkdir -p install
-	rm -f install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
-	cd app/mac-arm64; zip -r diogenes-mac-arm64-$(DIOGENESVERSION).zip Diogenes.app about
 	mv app/mac-arm64/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/
 
 # NB. Installing this Mac package will report success but silently
@@ -325,12 +326,12 @@ install/diogenes-mac-arm64-$(DIOGENESVERSION).zip: app/mac-arm64
 # in the mac directory here or another random copy on the devel
 # machine.  In other words, this installer usually will fail silently
 # when run on the machine that created the installer.
-installer-macpkg: install/diogenes-mac-$(DIOGENESVERSION).pkg
-install/diogenes-mac-$(DIOGENESVERSION).pkg: app/mac
-	mkdir -p install
-	rm -f install/diogenes-mac-$(DIOGENESVERSION).pkg
-	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
-	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
+# installer-macpkg: install/diogenes-mac-$(DIOGENESVERSION).pkg
+# install/diogenes-mac-$(DIOGENESVERSION).pkg: app/mac
+# 	mkdir -p install
+# 	rm -f install/diogenes-mac-$(DIOGENESVERSION).pkg
+# 	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
+# 	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
 
 # Add --verbose to fpm call to diagnose any errors
 
@@ -386,9 +387,10 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 # For now, we stick with the 32-bit app for Windows
 
 # installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
-installer-all: installer-mac installer-deb64 installer-rpm64 installer-arch64 #installer-w32 
+installer-all: installer-mac-x64 installer-mac-arm64 installer-deb64 installer-rpm64 installer-arch64 #installer-w32
+
 installer-linux: installer-deb64 installer-rpm64 installer-arch64
-# installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+
 installers =  install/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 
 clean:
@@ -409,16 +411,16 @@ tag:
 	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
 	git push origin master
 
-# make release GITHUBTOKEN=github-access-token
 release: $(installers)
-	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
-	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
+	gh auth login
+	gh release create -R pjheslin/diogenes $(DIOGENESVERSION)
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-$(DIOGENESVERSION)_amd64.deb
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-$(DIOGENESVERSION).x86_64.rpm
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-mac-x64-$(DIOGENESVERSION).zip
+	gh release upload -R pjheslin/diogenes $(DIOGENESVERSION) install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 
-# Upload Windows installer separately
-release-windows:
-	utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=install/diogenes-setup-win32-$(DIOGENESVERSION).exe > /dev/null
-
-# make update-website CLOUDFRONTID=id
 update-website:
 	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
 	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/

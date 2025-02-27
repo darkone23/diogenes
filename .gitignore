@@ -1,4 +1,5 @@
 /dependencies/data*
+/dependencies
 /.DS_Store
 /build
 /dependencies/PersXML.ent

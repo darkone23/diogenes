@@ -23,6 +23,10 @@
     echo hello from $GREET
   '';
 
+  scripts.setup-deps.exec = ''
+    bash -c "make && make -f mk.prebuilt-data"
+  '';
+
   enterShell = ''
     hello
     git --version
@@ -47,7 +51,7 @@
   };
   tasks."diogenes:setup" = {
     # required before you can run serve
-    exec = ''bash -c "make && make -f mk.prebuilt-data"'';
+    exec = ''devenv shell setup-deps'';
   };
 
   # https://devenv.sh/tests/

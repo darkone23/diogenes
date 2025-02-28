@@ -49,6 +49,9 @@
   tasks."diogenes:serve" = {
     exec = ''./server/diogenes-server.pl'';
   };
+
+  processes.server.exec = "perl $DEVENV_ROOT/server/diogenes-server.pl";
+
   tasks."diogenes:setup" = {
     # required before you can run serve
     exec = ''devenv shell setup-deps'';

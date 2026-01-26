@@ -31,6 +31,7 @@
     hello
     git --version
 
+    # TODO: this can be set via env.FLEX_PATH
     FLEX_PATH=$(dirname $(dirname $(which flex)))/lib
     export LIBRARY_PATH=$FLEX_PATH:$LIBRARY_PATH
 
@@ -52,6 +53,7 @@
 
   processes.server.exec = "perl $DEVENV_ROOT/server/diogenes-server.pl";
 
+  # devenv tasks run <task>
   tasks."diogenes:setup" = {
     # required before you can run serve
     exec = ''devenv shell setup-deps'';

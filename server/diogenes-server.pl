@@ -117,7 +117,7 @@ if ($PORT =~ /\D/ or $PORT < 1024)
 # Hostname
 
 # my $HOST = 'localhost'; ## Not defined in later Fedora
-my $HOST = '127.0.0.1';
+my $HOST = '0.0.0.0';
 $HOST = hostfqdn() if defined $opt_h;
 $HOST = $opt_H if defined $opt_H;
 #my $HOST_num = gethostbyname $HOST or die "Can't resolve $HOST: $!\n;
@@ -352,7 +352,9 @@ sub handle_request
         # Workaround for annoying CGI.pm bug/warning
         $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
 
-        $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
+        # TODO: why was this here?
+        # $client->send_basic_header(RC_OK, 'OK');
+        # 
         # This tells CGI.pm the name of the host and script, which goes into
         # the action parameter of the form element(s)
         my $host = $request->header('Host');
@@ -387,7 +389,10 @@ sub handle_request
 
     }
     elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
-        $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
+
+        # TODO: why was this here?
+        # $client->send_basic_header(RC_OK, 'OK');
+        # 
         # Serve TLL/OLD pdfs, but first translate filename
         my %args_init = (-type => 'none');
         my $init = new Diogenes::Base(%args_init);

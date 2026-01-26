@@ -27,6 +27,9 @@ Changes.html
 .devenv*
 devenv.local.nix
 
+Classics-Data/
+prebuilt-data.tar.xz
+
 # direnv
 .direnv
 

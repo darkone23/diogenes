@@ -43,6 +43,7 @@ use HTTP::Request;
 use HTTP::Status;
 use HTTP::Headers;
 use Cwd;
+use POSIX ();
 use Diogenes::Base;
 use Diogenes::Script;
 use Diogenes::Perseus;
@@ -215,7 +216,14 @@ while (1)
     }
     else
     {
-        # A "normal" forking server
+        # A "normal" forking server.  Fork a child per connection and
+        # reap the children as they exit; without this they linger as
+        # zombies in the parent's process table (roughly one per
+        # request served).
+        $SIG{CHLD} = sub {
+            my $kid;
+            do { $kid = waitpid(-1, POSIX::WNOHANG) } while $kid > 0;
+        };
         write_lock();
         while (my $client = $server->accept)
         {
